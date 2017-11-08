@@ -1,0 +1,19 @@
+{
+  "name": "xokei-server",
+  "version": "1.0.0",
+  "description": "xokei game server",
+  "main": "src/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pulviscriptor/xokei-server.git"
+  },
+  "author": "pulviscriptor",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/pulviscriptor/xokei-server/issues"
+  },
+  "homepage": "https://github.com/pulviscriptor/xokei-server#readme"
+}

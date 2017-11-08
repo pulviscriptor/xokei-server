@@ -1,2 +1,3 @@
 # xokei-server
-xokei game server
+Server for xokei game.  
+Project is in development.
