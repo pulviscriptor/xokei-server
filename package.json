@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/pulviscriptor/xokei-server/issues"
   },
-  "homepage": "https://github.com/pulviscriptor/xokei-server#readme"
+  "homepage": "https://github.com/pulviscriptor/xokei-server#readme",
+  "dependencies": {
+    "ws": "^3.3.0"
+  }
 }
