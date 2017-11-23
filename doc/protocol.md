@@ -5,4 +5,45 @@ Examples:
 `["game_won",{"winner":"player1","scores":[6,3]}]`
 # Server -> Client #
 ## welcome ##
-`[1]` (`string`) - version of server. Client should disconnect if version mismatch from client's version.
+First message from server.  
+- `version` (`string`) - version of server. Client should disconnect if version mismatch from client's version.
+
+## joined_room ##
+Player joined room. `window.location.hash` will be changed to `id`.
+- `opt` (`object`) 
+	- `room_id` (`string`) - ID of room. Example: `7W3ZLG`
+	- `side` (`string`) - side of player. `player1` or `player2`
+	- `type` (`string`) - `public` or `private` room type
+
+## invite_friend ##
+Display dialog with URL to invite friend to newly created private room.
+
+## kill ##
+Display dialog with URL to invite friend to newly created private room.
+- `code` (`string`) - reason to kill. Available codes:
+  -
+
+## check_room_result ##
+Result of client's `check_room` request.
+- `result` (`string`) - next strings can be sent:
+ - `NOT_FOUND` - room not found
+ - `GAME_RUNNING` - room is already have 2 players and game running
+ - `AVAILABLE` - you can join this room
+
+# Client -> Server #
+## create_room ##
+Create new game room.  
+If room is `public` then server will attempt to find free room for player.  
+- `opt` (`object`)  
+	- `type` (`string`) - `public` or `private` room type
+	- `name` (`string`) - player name
+
+## check_room ##
+Check if private room exists.
+- `id` (`string`) - room ID
+
+## join_room ##
+Join private room.
+- `opt` (`object`)  
+	- `room` (`string`) - room ID
+	- `name` (`string`) - player name
