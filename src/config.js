@@ -9,7 +9,10 @@ var config = {
 
 		// port to listen on
 		port: 9000
-	}
+	},
+
+	// same length should be set on client
+	playerNameLength: 15
 };
 
 module.exports = config;

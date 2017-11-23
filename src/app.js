@@ -4,9 +4,10 @@ var config = require('./config');
 
 function App() {
 	this.log = new Logger('App');
+	this.debug = config.debug;
 
-	if(config.debug >= 1)
-		this.log.info('creating server');
+	if(this.debug >= 1)
+		this.log.info('Creating server');
 
 	this.server = new Server(this, config.server);
 }

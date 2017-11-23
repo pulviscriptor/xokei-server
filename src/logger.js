@@ -54,7 +54,7 @@ Logger.prototype.formatToLog = function(type, text) {
 	out += ' ';
 
 	if(type == 2)
-		out += this.colorize(31, true, true, 'ERROR!') + ' ';
+		out += this.colorize(31, true, true, 'ERROR') + ' ';
 
 	if(type == 3)
 		out += this.colorize(33, true, true, 'WARNING') + ' ';
