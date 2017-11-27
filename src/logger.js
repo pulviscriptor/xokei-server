@@ -4,6 +4,8 @@ var tty = require('tty');
 Logger.colors = [32, 36, 33, 34, 35, 31];
 Logger.use_color_id = 0;
 Logger.last = process.hrtime();
+Logger.stdout = console.log.bind(console);
+Logger.stderr = console.error.bind(console);
 
 function Logger(id) {
 	this.id = id;
@@ -14,15 +16,15 @@ function Logger(id) {
 Logger.prototype.info = function(text) {
 	var msg = this.formatToLog(1, text);
 
-	console.log(msg);
+	Logger.stdout(msg);
 };
 
 Logger.prototype.warn = function(text) {
 	var msg =  this.formatToLog(3, text);
 
 	if(!this.in_tty)
-		console.log(msg);
-	console.error(msg);
+		Logger.stdout(msg);
+	Logger.stderr(msg);
 };
 
 Logger.prototype.error = function(e) {
@@ -36,8 +38,8 @@ Logger.prototype.error = function(e) {
 	e.stack.split('\n').map(function (line) {
 		msg = logger.formatToLog(2, line);
 		if(!logger.in_tty)
-			console.log(msg);
-		console.error(msg);
+			Logger.stdout(msg);
+		Logger.stderr(msg);
 	});
 };
 

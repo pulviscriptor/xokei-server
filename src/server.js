@@ -6,8 +6,7 @@ var config = require('./config');
 // change this version on protocol updates that will not work on old clients
 Server.prototype.VERSION = '1.0.0';
 
-function Server(app, opt) {
-	this.app = app;
+function Server(opt) {
 	this.host = opt.host;
 	this.port = opt.port;
 
@@ -112,6 +111,33 @@ Server.prototype.removeRoom = function (room) {
 			this.log.info('Removed room ' + room + ' | total rooms: ' + Object.keys(this.rooms).length);
 	}
 
+};
+
+// when we destroy server node should finish process
+// if it is not finishing, then we have leak somewhere
+Server.prototype.destroy = function (reason) {
+	if(this.debug >= 1)
+		this.log.info('Destroying server | reason: ' + reason);
+
+
+	if(this.debug >= 1)
+		this.log.info('Destroying ' + (Object.keys(this.clients).length) + ' clients');
+
+	for(var key in this.clients) {
+		var client = this.clients[key];
+		if(!client.dead) {
+			client.destroy('SERVER_SHUTDOWN')
+		}
+	}
+
+	if(this.debug >= 1)
+		this.log.info('Destroying WebSocket server');
+
+	var server = this;
+	this.wss.close(function () {
+		if(server.debug >= 1)
+			server.log.info('WebSocket server closed, now application should exit otherwise something leaking somewhere');
+	});
 };
 
 module.exports = Server;
