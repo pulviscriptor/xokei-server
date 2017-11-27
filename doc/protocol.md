@@ -19,9 +19,10 @@ Player joined room. `window.location.hash` will be changed to `id`.
 Display dialog with URL to invite friend to newly created private room.
 
 ## kill ##
-Display dialog with URL to invite friend to newly created private room.
+Force client to close connection.
 - `code` (`string`) - reason to kill. Available codes:
-  -
+  - `CLIENT_DISCONNECTED` - opponent disconnected
+  - `SERVER_SHUTDOWN` - server shutting down
 
 ## check_room_result ##
 Result of client's `check_room` request.
