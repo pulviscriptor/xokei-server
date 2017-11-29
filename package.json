@@ -4,7 +4,8 @@
   "description": "xokei game server",
   "main": "src/app.js",
   "scripts": {
-    "test": "node ./node_modules/mocha/bin/mocha ./test/tests --recursive"
+    "test": "node ./node_modules/mocha/bin/mocha ./test/tests --recursive --timeout 5000",
+	"server": "node ./src/app.js"
   },
   "repository": {
     "type": "git",
