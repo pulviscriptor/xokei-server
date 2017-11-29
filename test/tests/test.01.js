@@ -1,4 +1,5 @@
 var expect = require('chai').expect;
+var testConfig;
 
 // to store server
 var Server;
@@ -6,29 +7,38 @@ var server;
 
 // to store log
 var Logger;
-var log_stdout = [];
-var log_stderr = [];
 
-// to catch server output in test
+// to catch server error in this test
+var server_error = false;
+
 // this "dirty hack" is used only for this test file, next tests will use utils
 var on_stdout = null;
 
 describe('Start and destroy server', function () {
 	describe('Preparing for test', function () {
+		it('should require config', function() {
+			testConfig = require('../config');
+		});
+
 		it('should require logger', function() {
 			Logger = require('../../src/logger.js');
 		});
 
 		it('should re-define logger stdout/stderr', function() {
 			Logger.stdout = function (msg) {
-				log_stdout.push(msg);
+				if(testConfig.verbose) {
+					console.log(msg);
+				}
 				if(on_stdout) {
 					on_stdout(msg);
 				}
 			};
-			Logger.stderr = function (msg) {
-				log_stdout.push(msg);
-				console.error(msg);
+			Logger.stderr = function (e) {
+				server_error = true;
+				console.error(e);
+				process.nextTick(function () {
+					throw e;
+				});
 			};
 		});
 
@@ -53,7 +63,10 @@ describe('Start and destroy server', function () {
 				}
 			};
 
-			server = new Server({host: '127.0.0.1', port: '11333'});
+			server = new Server({
+				host: testConfig.host,
+				port: testConfig.port,
+				debug: 3});
 		});
 
 		it('should destroy server and complete test', function (done) {
@@ -75,7 +88,7 @@ describe('Start and destroy server', function () {
 		});
 
 		it('should finish without stderr output', function () {
-			expect(log_stderr.length).to.be.equal(0);
+			expect(server_error).to.be.equal(false);
 		});
 	});
 });
