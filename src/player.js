@@ -13,7 +13,7 @@ function Player(client, opt) {
 
 	this.id = client.id;
 	this.dead = null;
-	this.debug = config.debug;
+	this.debug = this.client.debug;
 	this.log = new Logger('Player:' + this.id);
 
 	if(this.debug >= 2)

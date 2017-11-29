@@ -6,7 +6,7 @@ function Game(room) {
 	this.room = room;
 	this.server = room.server;
 
-	this.debug = config.debug;
+	this.debug = this.room.debug;
 
 	this.id = room.id;
 	this.log = new Logger('Game:' + this.id);

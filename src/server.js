@@ -13,7 +13,7 @@ function Server(opt) {
 	this.wss = null;
 	this.log = new Logger('Server');
 
-	this.debug = config.debug;
+	this.debug = opt.debug || config.debug;
 
 	this.clients = {};
 	this.rooms = {};

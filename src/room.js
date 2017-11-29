@@ -6,7 +6,7 @@ var Game = require('./game');
 function Room(server, opt) {
 	this.server = server;
 
-	this.debug = config.debug;
+	this.debug = this.server.debug;
 
 	this.id = utils.generateRoomID(server);
 	this.log = new Logger('Room:' + this.id);

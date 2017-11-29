@@ -11,7 +11,7 @@ function Client(server, ws, req) {
 	this.ip   = req.connection.remoteAddress;
 	this.port = req.connection.remotePort;
 
-	this.debug = config.debug;
+	this.debug = this.server.debug;
 
 	this.id = utils.generateClientID(server);
 	this.log = new Logger('Client:' + this.id);
