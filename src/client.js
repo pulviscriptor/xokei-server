@@ -73,12 +73,6 @@ Client.prototype.onMessage = function (data) {
 	}else if(this.player && this.player.processors[cmd]) {
 		that = this.player;
 		processor = this.player.processors[cmd];
-	}else if(this.player && this.player.room && this.player.room.processors[cmd]) {
-		that = this.player.room;
-		processor = this.player.room.processors[cmd];
-	}else if(this.player && this.player.room && this.player.room.game && this.player.room.game.processors[cmd]) {
-		that = this.player.room.game;
-		processor = this.player.room.processors[cmd];
 	}else{
 		return this.log.warn('Failed to find processor for packet: ' + data);
 	}

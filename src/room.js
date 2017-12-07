@@ -132,9 +132,12 @@ Room.prototype.startGame = function () {
 	this.game = new Game(this);
 };
 
-Room.prototype.processors = {
-
+Room.prototype.send = function () {
+	var args = Array.prototype.slice.call(arguments);
+	this.player1.client.send.apply(this.player1.client, args);
+	this.player2.client.send.apply(this.player2.client, args);
 };
+
 
 
 module.exports = Room;
