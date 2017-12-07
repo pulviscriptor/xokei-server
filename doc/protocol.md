@@ -31,6 +31,32 @@ Result of client's `check_room` request.
  - `GAME_RUNNING` - room is already have 2 players and game running
  - `AVAILABLE` - you can join this room
 
+## opponent_joined ##
+Opponent joined game
+- `opt` (`object`)
+	- `name` (`string`) - opponent's name
+	- side `player1` or `player2`
+
+## board ##
+Load board state with actors places.
+- `opt` (`object`)  
+	- `actors` (`array`) - array of objects. Each object has `x`, `y`, `owner` (`string`) (`player1` or `player2)
+
+## place_puck ##
+Tell player to place puck.  
+Both players will receive this message.
+- `owner` (`string`) - `player1` or `player2`
+
+## puck_placed ##
+Puck is placed on board.
+- `x` (`int`)
+- `y` (`int`)
+
+## turn ##
+Switch board owner (wait turn of player) (two moves)  
+Both players will receive this message.
+- `player` (`string`) - new owner `player1` or `player2`
+
 # Client -> Server #
 ## create_room ##
 Create new game room.  
@@ -48,3 +74,8 @@ Join private room.
 - `opt` (`object`)  
 	- `room` (`string`) - room ID
 	- `name` (`string`) - player name
+
+## place_puck ##
+Tell server to place puck.
+- `x` (`int`)
+- `y` (`int`)
