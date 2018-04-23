@@ -32,11 +32,31 @@ describe('Testing multiple clients', function () {
 
 		it('should join player2 in room', function (done) {
 			client2.wait('RECV(joined_room)', done);
-			client2.send('join_room', {room: client1.game.id, name: 'MegaPlayer'});
+			client2.send('join_room', {room: client1.room_id, name: 'MegaPlayer'});
 		});
 
 		it('should match rooms for player1 and player2', function () {
-			expect(client1.game.id).to.be.equal(client2.game.id);
+			expect(client1.room_id).to.be.equal(client2.room_id);
+		});
+
+		it('should fill player1 properties', function () {
+			expect(client1.room_id).not.to.be.null;
+			expect(client1.game_state).to.be.equal('placing puck');
+			expect(client1.board).not.to.be.null;
+			expect(client1.board_owner).to.be.equal('player1');
+			expect(client1.side).not.to.be.null;
+			expect(client1.name).to.be.equal('ProPlayer');
+			expect(client1.opponent_name).to.be.equal('MegaPlayer');
+		});
+
+		it('should fill player2 properties', function () {
+			expect(client2.room_id).not.to.be.null;
+			expect(client2.game_state).to.be.equal('placing puck');
+			expect(client2.board).not.to.be.null;
+			expect(client2.board_owner).to.be.equal('player1');
+			expect(client2.side).not.to.be.null;
+			expect(client2.name).to.be.equal('MegaPlayer');
+			expect(client2.opponent_name).to.be.equal('ProPlayer');
 		});
 	});
 

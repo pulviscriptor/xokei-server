@@ -5,6 +5,7 @@ var Logger = require('../../src/logger');
 function Server() {
 	this.server = null;
 	this.stdout_listeners = [];
+	this.stderr_listeners = [];
 	this.error = false;
 
 	this.prepare();
@@ -22,12 +23,23 @@ Server.prototype.prepare = function () {
 			server.stdout_listeners[i](msg);
 		}
 	};
-	Logger.stderr = function (e) {
-		server.error = true;
-		console.error(e);
-		process.nextTick(function () {
-			throw new Error('stderr received, check output and/or enable verbosity in test/config.js to debug problem');
-		});
+	Logger.stderr = function (msg) {
+		var caught = false;
+
+		if(testConfig.verbose) {
+			console.log(msg);
+		}
+
+		for(var i=0;i<server.stderr_listeners.length;i++) {
+			if(server.stderr_listeners[i](msg)) {
+				caught = true;
+			}
+		}
+
+		if(!caught) {
+			server.error = true;
+			throw new Error('Uncaught server error: ' + msg);
+		}
 	};
 };
 
@@ -67,6 +79,31 @@ Server.prototype.wait = function (text, cb) {
 	};
 
 	server.stdout_listeners.push(listener);
+};
+Server.prototype.wait_error = function (text, cb) {
+	var server = this;
+
+	var timeout = setTimeout(function () {
+		removeListener();
+		cb(new Error('Waited for "' + text + '" error message but did not saw it in time'));
+	}, testConfig.timeout);
+
+	var listener = function (msg) {
+		if(msg.indexOf(text) >= 0) {
+			removeListener();
+			clearTimeout(timeout);
+			cb();
+			return true;
+		}
+	};
+
+	var removeListener = function () {
+		var id = server.stderr_listeners.indexOf(listener);
+		if(id < 0) throw new Error('Fatal utils error: did not found callback in server.listeners for error text "' + text + '"');
+		server.stderr_listeners.splice(id, 1);
+	};
+
+	server.stderr_listeners.push(listener);
 };
 
 Server.prototype.destroy = function (reason, cb) {

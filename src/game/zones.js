@@ -83,6 +83,7 @@ function zonesOfCoordinates(x, y) {
 			var zone_end_y = zones[side][zone][1].y;
 
 			if(x >= zone_start_x && x <= zone_end_x && y >= zone_start_y && y <= zone_end_y) {
+				ret.push(side);
 				ret.push(side + '_' + zone);
 				ret.push(zone);
 			}

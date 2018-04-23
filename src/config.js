@@ -12,7 +12,17 @@ var config = {
 	},
 
 	// same length should be set on client
-	playerNameLength: 15
+	playerNameLength: 15,
+
+	// rules of the game
+	game: {
+		// how much scores player should have to win
+		scoreToWin: 6,
+
+		// true = looser starts another game
+		// false = first player starts another game
+		looserStartsAnotherGame: true
+	}
 };
 
 module.exports = config;

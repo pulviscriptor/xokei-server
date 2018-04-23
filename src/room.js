@@ -79,7 +79,7 @@ Room.prototype.addPlayer = function (player) {
 	if(this.debug >= 1)
 		this.log.info('Player ' + player + ' joined room on side ' + side);
 
-	player.send('joined_room', {room_id: this.id, side: side, type: this.type});
+	player.send('joined_room', {room_id: this.id, side: side, type: this.type, name: player.name});
 
 	if(this.player1 && this.player2) {
 		this.startGame();

@@ -6,7 +6,7 @@ var config = {
 	host: '127.0.0.1',
 
 	// output all log messages
-	verbose: false,
+	verbose: true,
 
 	// timeout for utils, depends on package.json mocha "--timeout" value
 	// by default mocha timeout is 5000ms and utils is 4000ms

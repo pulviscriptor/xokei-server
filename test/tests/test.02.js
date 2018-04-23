@@ -38,6 +38,11 @@ describe('Testing testing utils', function () {
 			server.wait('RECV: ["check_room","TEST"]', done);
 			client.send('check_room', 'TEST');
 		});
+
+		it('should receive invalid packet from client', function (done) {
+			server.wait_error('Failed to find processor for packet', done);
+			client.send('testing_non_existing_processor', '123');
+		});
 	});
 
 	describe('Destroying server', function () {

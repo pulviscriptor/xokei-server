@@ -1,6 +1,6 @@
-function ActorPuck(board, tile) {
+function ActorPuck(board) {
 	this.board = board;
-	this.tile = tile;
+	this.type = 'puck';
 }
 
 module.exports = ActorPuck;

@@ -14,6 +14,7 @@ Player joined room. `window.location.hash` will be changed to `id`.
 	- `room_id` (`string`) - ID of room. Example: `7W3ZLG`
 	- `side` (`string`) - side of player. `player1` or `player2`
 	- `type` (`string`) - `public` or `private` room type
+	- `name` (`string`) - player's name
 
 ## invite_friend ##
 Display dialog with URL to invite friend to newly created private room.
@@ -35,7 +36,7 @@ Result of client's `check_room` request.
 Opponent joined game
 - `opt` (`object`)
 	- `name` (`string`) - opponent's name
-	- side `player1` or `player2`
+	- `side` (`string`) `player1` or `player2`
 
 ## board ##
 Load board state with actors places.
@@ -47,7 +48,7 @@ Tell player to place puck.
 Both players will receive this message.
 - `owner` (`string`) - `player1` or `player2`
 
-## puck_placed ##
+## puck_placed (TODO: replace with `turn`) ##
 Puck is placed on board.
 - `x` (`int`)
 - `y` (`int`)
@@ -75,7 +76,7 @@ Join private room.
 	- `room` (`string`) - room ID
 	- `name` (`string`) - player name
 
-## place_puck ##
+## place_puck (TODO: replace with `turn`) ##
 Tell server to place puck.
 - `x` (`int`)
 - `y` (`int`)

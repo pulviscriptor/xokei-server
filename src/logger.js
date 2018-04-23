@@ -35,12 +35,17 @@ Logger.prototype.error = function(e) {
 		e = new Error(e);
 	}
 
-	e.stack.split('\n').map(function (line) {
+	/*e.stack.split('\n').map(function (line) {
 		msg = logger.formatToLog(2, line);
 		if(!logger.in_tty)
 			Logger.stdout(msg);
 		Logger.stderr(msg);
-	});
+	});*/
+
+	msg = logger.formatToLog(2, e.stack);
+	if(!logger.in_tty)
+		Logger.stdout(msg);
+	Logger.stderr(msg);
 };
 
 Logger.prototype.formatToLog = function(type, text) {

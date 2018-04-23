@@ -48,7 +48,8 @@ Player.prototype.destroy = function (code, comment) {
 
 	// DO NOT call Player.destroy if you want to destroy player, call Player.client.destroy instead!
 	if(!this.client.dead) {
-		this.log.error('Something attempted to destroy player without destroying client! Something will leak!');
+		if(this.debug >= 1)
+			this.log.error('Something attempted to destroy player without destroying client! Something will leak!');
 	}
 
 	if(this.debug >= 3)
@@ -64,23 +65,35 @@ Player.prototype.destroy = function (code, comment) {
 };
 
 Player.prototype.processors = {
-	'place_puck': function (user_x, user_y) {
-		var x = parseInt(user_x);
-		var y = parseInt(user_y);
+	'turn': function (turn) {
+		try {
+			this.game.turn(this, turn);
+		}catch(e){
+			this.log.info('Board dump: ' + this.board.toASCII());
+			throw e;
+			//todo this.game.rejectTurn(turn, e);
+		}
 
-		if(!this.board) throw new Error('Attempted to place puck, but there is no board');
-		if(!Number.isInteger(x)) throw new Error('Attempted to place puck, but x is not integer: ' + user_x);
-		if(!Number.isInteger(y)) throw new Error('Attempted to place puck, but y is not integer: ' + user_y);
-		if(this.board.owner != this) throw new Error('Attempted to place puck, but board owner is ' + this.board.owner);
+		this.log.info('-------------DEBUG:');
+		this.log.info(this.board.toASCII());
+	},
 
-		var tile = this.board.tile(x, y);
-		if(!tile) throw new Error('Attempted to place puck, but there is no tile at: ' + user_x + ',' + user_y);
-		if(!tile.inZone(this, 'territory')) throw new Error('Attempted to place puck, but tile is not in territory zone at: ' + user_x + ',' + user_y);
-		if(tile.inZone(this, 'endZone')) throw new Error('Attempted to place puck, but tile is in endZone at: ' + user_x + ',' + user_y);
+	'another_game': function () {
+		if(!this.game) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no old game'));
+		if(!this.game.board) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no game.board'));
+		if(this.game.state != this.game.STATES.GAME_INACTIVE) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but state of game is: ' + this.game.state));
+		if(!this.game.winner) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no winner'));
 
-		this.board.placePuck(x, y);
-		this.game.setState(this.game.STATES.PLAYING_ROUND);
-		this.game.waitTurn(this.opponent);
+		if(!this.game.another_game_request) {
+			this.game.another_game_request = this;
+			this.opponent.send('another_game_request');
+		}else{
+			if(this.game.another_game_request == this) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but we have his request already'));
+			//todo start another game
+			if(this.debug >= 1)
+				this.log.info('Starting another game');
+			this.game.anotherGame();
+		}
 	}
 };
 

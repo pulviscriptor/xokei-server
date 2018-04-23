@@ -1,6 +1,7 @@
 var testConfig = require('../config');
 var util = require('util');
 var WebSocket = require('ws');
+var utils = require('../utils/utils');
 
 function Client(server, opt) {
 	this.id = opt.id;
@@ -12,10 +13,14 @@ function Client(server, opt) {
 	this.error = null;
 	this.stdout_listeners = [];
 
-	this.game = {
-		id: null,
-		side: null
-	};
+	this.room_id 	 	= null;
+	this.game_state  	= null;
+	this.board 		 	= null;
+	this.board_owner 	= null;
+	this.side 		 	= null;
+	this.name 		 	= null;
+	this.opponent_name	= null; // received from server
+	this.opponent 		= null; // will be set to client by test code
 
 	this.timers = {
 		connect: null
@@ -210,10 +215,70 @@ Client.prototype.processors = {
 	},
 
 	'joined_room': function (opt) {
-		this.game.id = opt.room_id;
-		this.game.side = opt.side;
+		this.room_id = opt.room_id;
+		this.side = opt.side;
+		this.name = opt.name;
+	},
+
+	'board': function (board) {
+		this.board = board;
+	},
+
+	'turn': function (owner) {
+		this.board_owner = owner;
+		this.game_state = 'playing round';
+	},
+
+	'opponent_joined': function (opt) {
+		this.opponent_name = opt.name;
+	},
+
+	'place_puck': function (owner) {
+		this.board_owner = owner;
+		this.game_state = 'placing puck';
 	}
 };
+
+
+Client.prototype.place_puck = function (target, done) {
+	var cord = utils.notationToCoordinates(target);
+	this.opponent.wait('"target":{"type":"place puck","x":' + cord.x + ',"y":' + cord.y + '}}]}]', done);
+	this.send("turn",{"scored":false,"history":[{"target":{"type":"Begin round"}},{"target":{"type":"place puck"},"finish":{"x":cord.x,"y":cord.y}}]});
+};
+
+Client.prototype.turn = function (done, turn) {
+	var scored = false;
+	//var lastMove = turn[turn.length-1];
+	//if(lastMove.move == 'puck' && cords)
+
+	var history = [];
+	for(var i=0;i<turn.length;i++) {
+		var current = turn[i];
+		var from, to, direction, trajectory;
+		if(current.move == 'actor') {
+			from = utils.notationToCoordinates(current.from);
+			to = utils.notationToCoordinates(current.to);
+			history.push({"target":{"type":"actor"},"start":{"x":from.x,"y":from.y},"finish":{"x":to.x,"y":to.y}});
+		}else if(current.move == 'puck') {
+			from = utils.notationToCoordinates(current.from);
+			to = utils.notationToCoordinates(current.to);
+			direction = utils.puckDirectionToCoordinates(from, current.direction);
+			trajectory = utils.calculatePuckTrajectory(from, direction, to);
+
+			history.push({"target":{"type":"puck"},"start":{"x":from.x,"y":from.y},"finish":{"x":to.x,"y":to.y},"trajectory":trajectory});
+			if(utils.isTileInGoalZone(to)) {
+				scored = utils.scoredSide(to);
+			}
+		}
+	}
+
+	this.opponent.wait('RECV(receive_turn)', done);
+
+	this.send('turn', {"scored":scored,"history":history});
+};
+
+
+
 
 module.exports = Client;
 
