@@ -94,6 +94,10 @@ Turn.prototype = {
 			}
 			var result = this.history[key].execute(game, game.board);
 			if(result) ret = result;
+
+			if(this.game.debug >= 5 && this.history.length == 2 && key == 0) {
+				this.game.log.info(this.game.board.toASCII('Board after first move, before second move:'));
+			}
 		}
 
 		return ret;

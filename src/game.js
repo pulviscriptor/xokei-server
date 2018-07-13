@@ -109,6 +109,8 @@ Game.prototype.createBoard = function () {
 };
 
 Game.prototype.setState = function (state) {
+	if(this.debug >= 3)
+		this.log.info('setState: ' + this.state + '->' + state);
 	if(this.state == state) throw new Error('Attempted to change state to ' + state + ' but game already in this state');
 	this.state = state;
 };
@@ -203,7 +205,7 @@ Game.prototype.anotherGame = function () {
 	//this.room.send('board', this.board.pack());
 	//this.playerPlacingPuck(this.player1);
 
-	if(config.game.looserStartsAnotherGame) {
+	if(this.config.looserStartsAnotherGame) {
 		this.board.owner = this.winner.opponent;
 	}else{
 		this.board.owner = this.player1;

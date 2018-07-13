@@ -147,12 +147,21 @@ Client.prototype.processors = {
 		this.player = new Player(this, {name: name});
 
 		var type = (opt.type == 'private') ? 'private' : 'public';
-		var room = new Room(this.server, {type: type});
-
-		room.addPlayer(this.player);
 
 		if(type == 'private') {
+			var room = new Room(this.server, {type: type});
+
+			room.addPlayer(this.player);
 			this.send('invite_friend');
+		}else{
+			room = this.server.getPublicRoom();
+			if(room) {
+				room.addPlayer(this.player);
+			}else{
+				room = new Room(this.server, {type: type});
+				room.addPlayer(this.player);
+				this.send('wait_opponent');
+			}
 		}
 	},
 

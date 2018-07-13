@@ -13,6 +13,10 @@ function Anticheat(game, player) {
 
 Anticheat.prototype = {
 	checkTurn: function (turn) {
+		var last = turn.history[turn.history.length-1];
+		if(!last.scored && turn.history.length != 2) {
+			throw new Error('Sent scored=false but there is ' + turn.history.length + ' moves in turn');
+		}
 		for(var i=0;i<turn.history.length;i++) {
 			this.emulateMove(turn.history[i]);
 		}
@@ -31,6 +35,8 @@ Anticheat.prototype = {
 
 			var tile = this.validTile(move.finish);
 
+			if(tile.inZone('goal')) throw new Error('Attempted to place puck in goal zone: ' + tile);
+			if(tile.inZone('endZone')) throw new Error('Attempted to place puck in endZone: ' + tile);
 			if(!tile.inZone(this.player, 'territory')) throw new Error('Attempted to place puck on wrong territory: ' + tile);
 			if(tile.actor) throw new Error('There is already actor in tile ' + tile + ' and it is ' + tile.actor);
 
@@ -65,19 +71,29 @@ Anticheat.prototype = {
 			var tileIn_goal = (tile_finish.zones.indexOf('goal') >= 0);
 			var tileIn_endZone = (tile_finish.zones.indexOf('endZone') >= 0);
 
+			//todo re-write this mess
 			if( tileIn_goal || tileIn_endZone ) {
 				if (tileIn_goal) {
+					// opponent can't move inside goal zone at all
+					if(tile_finish.zones.indexOf(this.player.opponent.side + '_goal') >= 0) {
+						throw new Error('Attempted to move to opponent\'s goal zone at ' + tile_finish);
+					}
+
 					var zone = (tile_finish.zones.indexOf('player1_goal') >= 0) ? 'player1_goal' : 'player2_goal';
-				} else if (tileIn_endZone) {
+					var actorsInZone = this.getActorsInZone(zone, tile_start);
+
+					if(actorsInZone.length >= 1) throw new Error('Attempted to move actor from ' +
+						tile_start + ' to ' + tile_finish + ' but in "' + zone + '" already 1 or more actors in: ' + actorsInZone);
+
+				// do check only if owner of endZone trying to put his 3 actors there. Opponent can put all his actors to opponent's endZone
+				} else if (tileIn_endZone && tile_finish.owner == tile_start.actor.owner.side) {
 					zone = (tile_finish.zones.indexOf('player1_endZone') >= 0) ? 'player1_endZone' : 'player2_endZone';
+					// count only owner's actors in endZone
+					actorsInZone = this.getActorsInZone(zone, tile_start, tile_finish.owner);
+
+					if(actorsInZone.length >= 2) throw new Error('Attempted to move actor from ' +
+						tile_start + ' to ' + tile_finish + ' but in "' + zone + '" already 2 or more actors in: ' + actorsInZone);
 				}
-				var actorsInZone = this.getActorsInZone(zone, tile_start);
-
-				if(tileIn_goal && actorsInZone.length >= 1) throw new Error('Attempted to move actor from ' +
-					tile_start + ' to ' + tile_finish + ' but in "' + zone + '" already 1 or more actors in: ' + actorsInZone);
-
-				if(tileIn_endZone && actorsInZone.length >= 2) throw new Error('Attempted to move actor from ' +
-					tile_start + ' to ' + tile_finish + ' but in "' + zone + '"  already 2 or more actors in: ' + actorsInZone);
 			}
 
 			move.execute(this.game_emulator, this.board_emulator);
@@ -120,6 +136,16 @@ Anticheat.prototype = {
 				throw new Error('First tile in trajectory is more than 1 tile away: start=' + move.start.x + ',' + move.start.y + ' trajectory[0]=' + direction.x + ',' + direction.y);
 			}
 
+			// calculate valid kick directions and check if player sent valid direction
+			var kickDirections = this.calculateKickDirections(tile_start, this.player);
+			var directionTile = this.validTile(direction);
+			if(kickDirections.blockedByPlayers) throw new Error('Attempted to kick puck but its blocked by players');
+			if(kickDirections.noOwnerNearPuck) throw new Error('Attempted to kick puck but there is no player near it');
+			var validKickDirection = kickDirections.directions.find(function (el) {
+				if(el.x == directionTile.x && el.y == directionTile.y) return el;
+			});
+			if(!validKickDirection) throw new Error('Attempted to kick puck but ' + tile_start + '->' + directionTile + ' is not valid direction');
+
 			// calculating trajectory based on direction
 			var calculatedTrajectory = this.calculatePuckTrajectory(move.start, direction);
 
@@ -127,6 +153,7 @@ Anticheat.prototype = {
 			for(i=0;i<move.trajectory.length;i++) {
 				var client_tile = move.trajectory[i];
 				var calculated_tile = calculatedTrajectory[i];
+				if(!calculated_tile) throw new Error('Received more tiles in trajectory than anticheat calculated: ' + JSON.stringify(move.trajectory) + ' vs ' + JSON.stringify(calculatedTrajectory));
 
 				if(client_tile.x != calculated_tile.x || client_tile.y != calculated_tile.y) {
 					throw new Error('Trajectory mismatch at tile=' + i + '! Player sent: ' + JSON.stringify(move.trajectory) + ' but server calculated ' + JSON.stringify(calculatedTrajectory));
@@ -160,7 +187,7 @@ Anticheat.prototype = {
 		return tile;
 	},
 
-	getActorsInZone: function (zone, excludeTile) {
+	getActorsInZone: function (zone, excludeTile, side) {
 		var ret = [];
 		for(var x in this.board_emulator.tiles) {
 			for(var y in this.board_emulator.tiles[x]) {
@@ -169,6 +196,7 @@ Anticheat.prototype = {
 				if(!tile) continue;
 				if(!tile.actor) continue;
 				if(tile.actor.type != 'player') continue;
+				if(side && tile.actor.owner.side != side) continue;
 				if(tile.zones.indexOf(zone) >= 0) ret.push(tile);
 			}
 		}
@@ -265,6 +293,103 @@ Anticheat.prototype = {
 		}
 
 		return trajectory;
+	},
+
+	// ported from client
+	calculateKickDirections: function (puckTile, player) {
+		var anticheat = this;
+
+		var directions = [],
+			neighborhood;
+
+		// we assume puck is blocked by players around it until we don't see empty tile near it
+		var blockedByPlayers = true;
+
+		// we assume there is no owner of turn near puck until we see some
+		var noOwnerNearPuck = true;
+
+		neighborhood = puckTile.neighborhood();
+
+		neighborhood.forEach(function(actorTile) {
+			var actorAngle,
+				dx,
+				dy,
+				oppositeTile;
+
+			// is there empty space near puck?
+			if (!actorTile.actor) {
+				blockedByPlayers = false;
+			}
+
+			// is there owner of turn near puck?
+			if (actorTile.actor && actorTile.actor.owner == player) {
+				noOwnerNearPuck = false;
+			}
+
+			// we need to know in which direction we can kick puck
+			// for that we need to know on which side of puck is owner of turn located
+			// for that we interested only in owners around puck
+			if (!actorTile.actor || actorTile.actor.owner !== player) {
+				return;
+			}
+
+			// find relative position of the actor on this tile
+			dx = actorTile.x - puckTile.x;
+			dy = actorTile.y - puckTile.y;
+
+			// find tile on the other side of the ball based on the actor's
+			// position
+			oppositeTile = anticheat.board_emulator.tile(puckTile.x - dx, puckTile.y - dy);
+
+			// find the relative angle of the player to the puck (atan2's
+			// arguments are passed in backwards, counterintuitively)
+			actorAngle = Math.atan2(dy, dx);
+
+			// iterate through the neighbors of the puck and find their
+			// relative positions to the puck, then compare the atan2 of
+			// that relative position to the atan2 of the relative position
+			// of the player; if the absolute of resulting value is greater or
+			// equal to 1.57 degrees radian, we know that that direction is not
+			// "backwards" for the current actor and we will add it to the
+			// list of directions; otherwise, we can't add this tile
+			neighborhood.forEach(function (tile) {
+				var diffAngle,
+					tileAngle = Math.atan2(tile.y - puckTile.y, tile.x - puckTile.x);
+
+				diffAngle = Math.abs(actorAngle - tileAngle);
+
+				if (diffAngle > Math.PI) {
+					diffAngle = Math.PI * 2 - diffAngle;
+				}
+
+				if (// the direction is greater than 45º away from the player
+				((diffAngle >= 1.57) ||
+
+					// or the puck is against a wall and the player is facing
+					// the wall
+					((!oppositeTile || oppositeTile.type === "wall") &&
+						dx * dy === 0) ||
+
+					// or the puck is in a corner
+					(neighborhood.length < 4)) &&
+
+				// and the tile is not occupied or already in the list
+				!tile.actor &&
+
+				// and the tile is not already in the list
+				directions.indexOf(tile) < 0) {
+
+					// then we can add this direction to the list
+					directions.push(tile);
+				}
+			});
+		});
+
+		return {
+			directions: directions,
+			blockedByPlayers: blockedByPlayers,
+			noOwnerNearPuck: noOwnerNearPuck
+		};
 	}
 };
 

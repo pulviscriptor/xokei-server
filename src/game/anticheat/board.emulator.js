@@ -58,7 +58,7 @@ BoardEmulator.prototype = {
 	},
 
 	// converting board to ASCII text for debug purposes
-	toASCII: function () {
+	/*toASCII: function () {
 		var lines = [];
 
 		for(var x=0;x<=13;x++) {
@@ -82,6 +82,72 @@ BoardEmulator.prototype = {
 			}
 		}
 		return "\r\n" + lines.join("\r\n");
+	}*/
+
+	// converting board to ASCII text for debug purposes
+	toASCII: function (str) {
+		// don't ask how I did this
+		var ASCIITable =
+			'     0   1   2   3   4   5   6   7   8   9   10  11  12  13   \n' +
+			'       ╔═══╤═══╤═══╤═══╤═══╤═══╦═══╤═══╤═══╤═══╤═══╤═══╗      \n' +
+			' 8   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ S#  0\n' +
+			'       ╟───┼───┼───┼───┼───┼───╫───┼───┼───┼───┼───┼───╢      \n' +
+			' 7   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ S#  1\n' +
+			'       ╠═══╪═══╗───┼───┼───┼───╫───┼───┼───┼───╔═══╪═══╣      \n' +
+			' 6   S#║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ S#  2\n' +
+			'   ╔═══╣───┼───╫───┼───┼───┼───╫───┼───┼───┼───╫───┼───╠═══╗  \n' +
+			' 5 ║ # ║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ # ║ 3\n' +
+			'   ╟───╫───┼───╫───┼───┼───┼───╫───┼───┼───┼───╫───┼───╫───╢  \n' +
+			' 4 ║ # ║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ # ║ 4\n' +
+			'   ╚═══╣───┼───╫───┼───┼───┼───╫───┼───┼───┼───╫───┼───╠═══╝  \n' +
+			' 3   S#║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ S#  5\n' +
+			'       ╠═══╪═══╝───┼───┼───┼───╫───┼───┼───┼───╚═══╪═══╣      \n' +
+			' 2   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ S#  6\n' +
+			'       ╟───┼───┼───┼───┼───┼───╫───┼───┼───┼───┼───┼───╢      \n' +
+			' 1   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ S#  7\n' +
+			'       ╚═══╧═══╧═══╧═══╧═══╧═══╩═══╧═══╧═══╧═══╧═══╧═══╝      \n' +
+			'     [   a   b   c   d   e   f   g   h   i   j   k   l   ]    ';
+
+		var out = '';
+		var x = 0;
+		var y = 0;
+		var lines = ASCIITable.split("\n");
+		for(var i=0;i<lines.length;i++) {
+			x = 0;
+			var line = lines[i];
+
+			out += '\n';
+
+			if(line.indexOf('#') < 0) {
+				out += line;
+			}else{
+				for(var j=0;j<line.length;j++) {
+					var symbol = line[j];
+					if(symbol == '#') {
+						var tile = this.tiles[x][y];
+
+						if(!tile || !tile.actor) {
+							out += ' ';
+						}else if(tile.actor && tile.actor.owner && tile.actor.owner.side == 'player1') {
+							out += '1';
+						}else if(tile.actor && tile.actor.owner && tile.actor.owner.side == 'player2') {
+							out += '2';
+						}else if(tile.actor && tile.actor.type == 'puck') {
+							out += 'P';
+						}else{
+							lines[y] += '?'
+						}
+
+						x++;
+					}else{
+						out += symbol;
+					}
+				}
+				y++;
+			}
+		}
+
+		return (str || '') + out;
 	}
 };
 

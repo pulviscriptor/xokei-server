@@ -1,6 +1,6 @@
 var config = {
-	// log level 0-3
-	debug: 3,
+	// log level 0-5
+	debug: 5,
 
 	server: {
 		// ip address of interface to listen on

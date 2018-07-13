@@ -45,7 +45,7 @@ Client.prototype.prepare = function () {
 	this.log.error = (function (e) {
 		var client = this;
 		client.error = true;
-		console.error('Client(' + this.id + ')' + e);
+		console.log('Client(' + this.id + ')ERROR! ' + e);
 		process.nextTick(function () {
 			throw new Error('stderr received, check output and/or enable verbosity in test/config.js to debug problem');
 		});
@@ -242,11 +242,17 @@ Client.prototype.processors = {
 
 Client.prototype.place_puck = function (target, done) {
 	var cord = utils.notationToCoordinates(target);
-	this.opponent.wait('"target":{"type":"place puck","x":' + cord.x + ',"y":' + cord.y + '}}]}]', done);
+	if(done) {
+		this.opponent.wait('"target":{"type":"place puck","x":' + cord.x + ',"y":' + cord.y + '}}]}]', done);
+	}
 	this.send("turn",{"scored":false,"history":[{"target":{"type":"Begin round"}},{"target":{"type":"place puck"},"finish":{"x":cord.x,"y":cord.y}}]});
 };
 
 Client.prototype.turn = function (done, turn) {
+	if(!turn) {
+		turn = done;
+		done = null;
+	}
 	var scored = false;
 	//var lastMove = turn[turn.length-1];
 	//if(lastMove.move == 'puck' && cords)
@@ -272,7 +278,7 @@ Client.prototype.turn = function (done, turn) {
 		}
 	}
 
-	this.opponent.wait('RECV(receive_turn)', done);
+	if(done) this.opponent.wait('RECV(receive_turn)', done);
 
 	this.send('turn', {"scored":scored,"history":history});
 };

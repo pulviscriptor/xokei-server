@@ -113,6 +113,24 @@ Server.prototype.removeRoom = function (room) {
 
 };
 
+Server.prototype.getPublicRoom = function () {
+	for(var room_id in this.rooms) {
+		var room = this.rooms[room_id];
+		if(room.type != 'public') continue;
+		if(room.game) continue;
+
+		// just in case
+		if(room.dead) {
+			if(this.debug >= 1)
+				this.log.error('server.getPublicRoom found dead room in room list: ' + room_id + ', it should not be here!');
+			continue;
+		}
+
+		return room;
+	}
+	return null;
+};
+
 // when we destroy server node should finish process
 // if it is not finishing, then we have leak somewhere
 Server.prototype.destroy = function (reason) {

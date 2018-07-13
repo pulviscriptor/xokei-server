@@ -6,11 +6,13 @@ function Tile(board, x, y) {
 	this.y = y;
 	this.actor = null;
 	this.zones = zones[x][y];
-	this.owner = (this.zones.indexOf('player1') >= 0) ? 'player1' : 'player2';
+	this.owner = (this.zones.indexOf('player1') >= 0) ? 'player1' : 'player2'; //todo this should be "side" not "owner"
 }
 
 Tile.prototype.toString = function () {
-	return '[Tile ' + this.x + ',' + this.y + ' of ' + this.board.id + ']';
+	var horizontal = ["[", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k","l", "]"];
+	var vertical = ["8", "7", "6", "5", "4", "3", "2", "1"];
+	return '[Tile ' + (horizontal[this.x] + vertical[this.y]) + ' (' + this.x + ',' + this.y + ') of ' + this.board.id + ']';
 };
 
 Tile.prototype.place = function (actor) {
@@ -36,6 +38,25 @@ Tile.prototype.inZone = function (player, str) {
 	}
 
 	return this.zones.indexOf(zone) >= 0;
+};
+
+// ported from client
+Tile.prototype.neighborhood = function () {
+	var dx = [0, -1, -1, -1, 0, 1, 1, 1],
+		dy = [1, 1, 0, -1, -1, -1, 0, 1],
+		self = this;
+
+	return dx.map(function (x, i) {
+		var tile;
+
+		if (self.board.tiles[self.x + x]) {
+			tile = self.board.tiles[self.x + x][self.y + dy[i]];
+
+			if (tile) {
+				return tile;
+			}
+		}
+	}).filter(Boolean);
 };
 
 

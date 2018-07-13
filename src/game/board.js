@@ -134,7 +134,7 @@ Board.prototype.placePuck = function (x, y) {
 };
 
 // converting board to ASCII text for debug purposes
-Board.prototype.toASCII = function () {
+/*Board.prototype.toASCII = function (str) {
 	var lines = [];
 
 	for(var x=0;x<=13;x++) {
@@ -157,7 +157,84 @@ Board.prototype.toASCII = function () {
 			}
 		}
 	}
-	return "\r\n" + lines.join("\r\n");
+	return (str || '') + "\r\n" + lines.join("\r\n");
+};*/
+
+
+// converting board to ASCII text for debug purposes
+Board.prototype.toASCII = function (str) {
+	// don't ask how I did this
+	var ASCIITable =
+		'     0   1   2   3   4   5   6   7   8   9   10  11  12  13   \n' +
+		'       ╔═══╤═══╤═══╤═══╤═══╤═══╦═══╤═══╤═══╤═══╤═══╤═══╗      \n' +
+		' 8   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ D#  0\n' +
+		'       ╟───┼───┼───┼───┼───┼───╫───┼───┼───┼───┼───┼───╢      \n' +
+		' 7   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ D#  1\n' +
+		'       ╠═══╪═══╗───┼───┼───┼───╫───┼───┼───┼───╔═══╪═══╣      \n' +
+		' 6   S#║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ D#  2\n' +
+		'   ╔═══╣───┼───╫───┼───┼───┼───╫───┼───┼───┼───╫───┼───╠═══╗  \n' +
+		' 5 ║ # ║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ # ║ 3\n' +
+		'   ╟───╫───┼───╫───┼───┼───┼───╫───┼───┼───┼───╫───┼───╫───╢  \n' +
+		' 4 ║ # ║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ # ║ 4\n' +
+		'   ╚═══╣───┼───╫───┼───┼───┼───╫───┼───┼───┼───╫───┼───╠═══╝  \n' +
+		' 3   S#║ # │ # ║ # │ # │ # │ # ║ # │ # │ # │ # ║ # │ # ║ D#  5\n' +
+		'       ╠═══╪═══╝───┼───┼───┼───╫───┼───┼───┼───╚═══╪═══╣      \n' +
+		' 2   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ D#  6\n' +
+		'       ╟───┼───┼───┼───┼───┼───╫───┼───┼───┼───┼───┼───╢      \n' +
+		' 1   S#║ # │ # │ # │ # │ # │ # ║ # │ # │ # │ # │ # │ # ║ D#  7\n' +
+		'       ╚═══╧═══╧═══╧═══╧═══╧═══╩═══╧═══╧═══╧═══╧═══╧═══╝      \n' +
+		'     [   a   b   c   d   e   f   g   h   i   j   k   l   ]    ';
+
+	var game = this.game_emulator || this.game;
+
+	var out = '\n                            P' + this.owner.side.substr(1);
+	var x = 0;
+	var y = 0;
+	var score = 6;
+	var lines = ASCIITable.split("\n");
+	for(var i=0;i<lines.length;i++) {
+		x = 0;
+		var line = lines[i];
+
+		out += '\n';
+
+		if(line.indexOf('#') < 0) {
+			out += line;
+		}else{
+			for(var j=0;j<line.length;j++) {
+				var symbol = line[j];
+				if(symbol == '#') {
+					var tile = this.tiles[x][y];
+
+					if(!tile || !tile.actor) {
+						out += ' ';
+					}else if(tile.actor && tile.actor.owner && tile.actor.owner.side == 'player1') {
+						out += '1';
+					}else if(tile.actor && tile.actor.owner && tile.actor.owner.side == 'player2') {
+						out += '2';
+					}else if(tile.actor && tile.actor.type == 'puck') {
+						out += 'P';
+					}else{
+						lines[y] += '?'
+					}
+
+					x++;
+				}else if(symbol == 'S') {
+					out += (game.score.player1 >= score) ? '*' : ' ';
+				}else if(symbol == 'D') {
+					out += (game.score.player2 >= score) ? '*' : ' ';
+				}else {
+					out += symbol;
+				}
+			}
+			y++;
+		}
+		if(line.indexOf('S') >= 0 || line.indexOf('D') >= 0) {
+			score--;
+		}
+	}
+
+	return (str || '') + out;
 };
 
 module.exports = Board;

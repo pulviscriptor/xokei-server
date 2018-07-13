@@ -119,7 +119,7 @@ describe('Playing game', function () {
 
 	describe('Playing round to win by player2', function () {
 		it('should place puck at g5', function (done) {
-			player2.place_puck('g5', done);
+			player2.place_puck('g4', done);
 		});
 
 		it('should make goal in 1 turn', function (done) {
@@ -127,9 +127,9 @@ describe('Playing game', function () {
 				[
 					{
 						move: 'puck',
-						from: 'g5',
+						from: 'g4',
 						to: '[5',
-						direction: 'left'
+						direction: 'up-left'
 					}
 				]
 			);
@@ -152,6 +152,101 @@ describe('Playing game', function () {
 					}
 				]
 			);
+		});
+	});
+
+	describe('Skipping game to win', function () {
+		it('should place puck at f5', function (done) {
+			player1.place_puck('f5', done);
+		});
+		it('should make goal in 1 turn', function (done) {
+			player2.turn(done,
+				[
+					{
+						move: 'puck',
+						from: 'f5',
+						to: '[5',
+						direction: 'left'
+					}
+				]
+			);
+		});
+
+		it('should place puck at f5', function (done) {
+			player1.place_puck('f5', done);
+		});
+		it('should make goal in 1 turn', function (done) {
+			player2.turn(done,
+				[
+					{
+						move: 'puck',
+						from: 'f5',
+						to: '[5',
+						direction: 'left'
+					}
+				]
+			);
+		});
+
+		it('should place puck at f5', function (done) {
+			player1.place_puck('f5', done);
+		});
+		it('should make goal in 1 turn', function (done) {
+			player2.turn(done,
+				[
+					{
+						move: 'puck',
+						from: 'f5',
+						to: '[5',
+						direction: 'left'
+					}
+				]
+			);
+		});
+
+		it('should place puck at f5', function (done) {
+			player1.place_puck('f5', done);
+		});
+		it('should make goal in 1 turn and win the game', function (done) {
+			server.wait('won the game with score 6:1', done);
+
+			player2.turn(null,
+				[
+					{
+						move: 'puck',
+						from: 'f5',
+						to: '[5',
+						direction: 'left'
+					}
+				]
+			);
+		});
+	});
+
+	describe('Testing another game', function () {
+		it('should send another game request by player2 and reveive it by player1', function(done) {
+			player1.wait('RECV(another_game_request)', done);
+			player2.send('another_game');
+		});
+
+		it('should send another game request by player1 and confirm game started', function(done) {
+			player2.wait('RECV(another_game_started)', done);
+			player1.send('another_game');
+		});
+	});
+
+	describe('Placing puck', function () {
+		// client.state will not change singe there will be no `place_puck` packet before `another_game`
+		// it('should set game state to "placing puck"', function () {
+		// 	expect(player1.game_state).to.be.equal('placing puck');
+		// });
+
+		it('should place puck at f7', function (done) {
+			player1.place_puck('f7', done);
+		});
+
+		it('should set game state to "playing round"', function () {
+			expect(player1.game_state).to.be.equal('playing round');
 		});
 	});
 

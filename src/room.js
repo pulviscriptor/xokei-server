@@ -12,7 +12,7 @@ function Room(server, opt) {
 	this.log = new Logger('Room:' + this.id);
 	this.dead = null;
 
-	this.type = opt.type;
+	this.type = opt.type; // "public" or "private"
 	this.player1 = null;
 	this.player2 = null;
 	this.game = null;

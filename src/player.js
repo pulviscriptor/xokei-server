@@ -66,16 +66,21 @@ Player.prototype.destroy = function (code, comment) {
 
 Player.prototype.processors = {
 	'turn': function (turn) {
+		if(this.debug >= 5) {
+			this.log.info(this.board.toASCII('Board before turn:'));
+		}
+
 		try {
 			this.game.turn(this, turn);
 		}catch(e){
-			this.log.info('Board dump: ' + this.board.toASCII());
+			this.log.info('Rejecting last move, board dump: ' + this.board.toASCII());
+			this.send('move_rejected');
 			throw e;
-			//todo this.game.rejectTurn(turn, e);
 		}
 
-		this.log.info('-------------DEBUG:');
-		this.log.info(this.board.toASCII());
+		if(this.debug >= 5) {
+			this.log.info(this.board.toASCII('Board after turn:'));
+		}
 	},
 
 	'another_game': function () {

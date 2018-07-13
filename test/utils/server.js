@@ -50,7 +50,7 @@ Server.prototype.start = function (cb) {
 	this.server = new GameServer({
 		host: testConfig.host,
 		port: testConfig.port,
-		debug: 3});
+		debug: (testConfig.verbose ? 5 : 0)});
 
 	this.wait('Ready for incoming connections', cb);
 };
