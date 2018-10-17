@@ -4,7 +4,7 @@ var server;
 var player2;
 
 //todo DEBUG
-require('../config').port = 9000;
+require('../config').port = 9900;
 
 function skipRound(owner, target, done) {
 	var client = player2;
@@ -557,7 +557,7 @@ describe('Playing game', function () {
 		});
 
 		it('should wait for player1 disconnect', function (done) {
-			server.wait('code: CLIENT_DISCONNECTED', done);
+			server.wait('code: NEW_GAME', done);
 		});
 	});
 	describe('Basics', function () {
@@ -593,30 +593,28 @@ describe('Playing game', function () {
 			player2.wait('RECV(receive_turn)', done);
 		});
 
-		it('move actor in goal zone to skip round for PhantomJS tests to run', function (done) {
+		it('should wait for PhantomJS tests to finish', function (done) {
+			server.wait_error('clientTestFinished', done);
+		});
+
+		it('should move actor g1 to h2 to i3', function (done) {
 			player2.turn(
 				[
 					{
 						move: 'actor',
-						from: ']5',
-						to: ']4'
+						from: 'g1',
+						to: 'h2'
 					},
 					{
 						move: 'actor',
-						from: ']4',
-						to: ']5'
+						from: 'h2',
+						to: 'i3'
 					}
 				]
 			);
 			player2.wait('RECV(receive_turn)', done);
 		});
-
-		for(var i=0;i<3;i++)
-			it('Wasting test time', function (done) {
-				setTimeout(done, 4000);
-			});/**/
 	});
-
 
 	describe('Destroying server', function () {
 		it('should stop server', function(done) {

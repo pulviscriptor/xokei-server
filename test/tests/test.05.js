@@ -86,7 +86,7 @@ describe('Testing malicious packets', function () {
 		});
 
 		it('should send non-JSON packet', function (done) {
-			server.wait_error('SyntaxError: Unexpected token r in JSON at position 0', done);
+			server.wait_error('SyntaxError: Unexpected token', done);
 			client_tmp.ws.send('random_string_packet');
 		});
 

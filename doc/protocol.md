@@ -24,6 +24,7 @@ Force client to close connection.
 - `code` (`string`) - reason to kill. Available codes:
   - `CLIENT_DISCONNECTED` - opponent disconnected
   - `SERVER_SHUTDOWN` - server shutting down
+  - `NEW_GAME` - game finished and opponent clicked "new game" (refused to play another game)
 
 ## check_room_result ##
 Result of client's `check_room` request.
@@ -58,6 +59,12 @@ Switch board owner (wait turn of player) (two moves)
 Both players will receive this message.
 - `player` (`string`) - new owner `player1` or `player2`
 
+## opponent_resigned ##
+Opponent resigned
+- `code` (`string`) - resign reason:
+	- `CLIENT_DISCONNECTED` - opponent disconnected
+	- `ONLINE_RESIGN` - opponent clicked "resign" button
+
 # Client -> Server #
 ## create_room ##
 Create new game room.  
@@ -80,3 +87,6 @@ Join private room.
 Tell server to place puck.
 - `x` (`int`)
 - `y` (`int`)
+
+## resign ##
+Resign game.

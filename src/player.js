@@ -84,22 +84,42 @@ Player.prototype.processors = {
 	},
 
 	'another_game': function () {
-		if(!this.game) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no old game'));
-		if(!this.game.board) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no game.board'));
-		if(this.game.state != this.game.STATES.GAME_INACTIVE) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but state of game is: ' + this.game.state));
-		if(!this.game.winner) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no winner'));
+		if (!this.game) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no old game'));
+		if (!this.game.board) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no game.board'));
+		if (this.game.state != this.game.STATES.GAME_INACTIVE) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but state of game is: ' + this.game.state));
+		if (!this.game.winner) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but there is no winner'));
 
-		if(!this.game.another_game_request) {
+		if (!this.game.another_game_request) {
 			this.game.another_game_request = this;
 			this.opponent.send('another_game_request');
-		}else{
-			if(this.game.another_game_request == this) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but we have his request already'));
-			//todo start another game
-			if(this.debug >= 1)
+		} else {
+			if (this.game.another_game_request == this) return ((this.debug >= 1) && this.log.warn('Player sent `another_game` but we have his request already'));
+
+			if (this.debug >= 1)
 				this.log.info('Starting another game');
 			this.game.anotherGame();
 		}
+	},
+
+	// new game clicked instead of "another game"
+	'new_game': function () {
+		if(!this.game) return ((this.debug >= 1) && this.log.warn('Player sent `new_game` but there is no old game'));
+		if(!this.game.board) return ((this.debug >= 1) && this.log.warn('Player sent `new_game` but there is no game.board'));
+		if(this.game.state != this.game.STATES.GAME_INACTIVE) return ((this.debug >= 1) && this.log.warn('Player sent `new_game` but state of game is: ' + this.game.state));
+		if(!this.game.winner) return ((this.debug >= 1) && this.log.warn('Player sent `new_game` but there is no winner'));
+
+		this.client.destroy('NEW_GAME', 'Game finished, player refused to play another game');
+	},
+
+	'resign': function () {
+		if(!this.game) return ((this.debug >= 1) && this.log.warn('Player sent `resign` but there is no game'));
+		if(this.game.state != this.game.STATES.PLACING_PUCK && this.game.state != this.game.STATES.PLAYING_ROUND) return ((this.debug >= 1) && this.log.warn('Player sent `resign` but state of game is: ' + this.game.state));
+		if(this.game.winner) return ((this.debug >= 1) && this.log.warn('Player sent `resign` but there is winner already'));
+		if(this.game.resigned) return ((this.debug >= 1) && this.log.warn('Player sent `resign` but it is resigned already'));
+
+		this.game.resign(this);
 	}
+
 };
 
 module.exports = Player;

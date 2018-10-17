@@ -27,6 +27,7 @@ function Game(room) {
 
 	// stuff used for `another game`
 	this.winner = null;
+	this.resigned = null; // player who resigned
 	this.another_game_request = null; // will store player who requested another game
 	this.score = {
 		player1: 0,
@@ -216,8 +217,21 @@ Game.prototype.anotherGame = function () {
 	this.room.send('another_game_started');
 };
 
+Game.prototype.resign = function (player) {
+	this.setState(this.STATES.GAME_INACTIVE);
+	this.resigned = player;
+	this.winner = player.opponent;
+	this.score[player.opponent.side] = config.game.scoreToWin;
+
+	if(this.debug >= 1)
+		this.log.info(player + ' resigned, ' + player.opponent + ' won the game with score ' + this.score[player.opponent.side] + ':' + this.score[player.side]);
+
+	player.opponent.send('opponent_resigned', 'ONLINE_RESIGN');
+};
+
 Game.prototype.cleanup = function () {
 	this.winner = null;
+	this.resigned = null;
 	this.another_game_request = null;
 	this.score = {
 		player1: 0,
