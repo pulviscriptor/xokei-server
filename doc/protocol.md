@@ -62,7 +62,7 @@ Both players will receive this message.
 ## opponent_resigned ##
 Opponent resigned
 - `code` (`string`) - resign reason:
-	- `CLIENT_DISCONNECTED` - opponent disconnected
+	- `CLIENT_DISCONNECTED` - opponent disconnected (show opponent resigned window)
 	- `ONLINE_RESIGN` - opponent clicked "resign" button
 
 # Client -> Server #

@@ -589,9 +589,91 @@ describe('Playing game', function () {
 			player2.wait('RECV(opponent_joined)', done);
 		});
 
-		it('should wait for PhantomJS player turn', function (done) {
+		it('should wait for PhantomJS player turn finished', function (done) {
 			player2.wait('RECV(receive_turn)', done);
 		});
+
+		it('should resign from server-side', function () {
+			player2.send('resign');
+		});
+
+		it('should receive another game request from client', function (done) {
+			player2.wait('RECV(another_game_request)', done);
+		});
+
+		it('starting another game', function (done) {
+			player2.send('another_game');
+			player2.wait('["another_game_started"]', done);
+		});
+	});
+
+	describe('Resign from client-side', function () {
+		it('should receive placed puck turn', function (done) {
+			player2.wait('RECV(receive_turn)', done);
+		});
+
+		it('should move actor from g1 to g2 to g3', function () {
+			player2.turn(
+				[
+					{
+						move: 'actor',
+						from: 'g1',
+						to: 'g2'
+					},
+					{
+						move: 'actor',
+						from: 'g2',
+						to: 'h3'
+					}
+				]
+			);
+		});
+
+		it('should receive resigned message', function (done) {
+			player2.wait('RECV(opponent_resigned)', done);
+		});
+
+		it('should start another game', function (done) {
+			player2.send('another_game');
+			player2.wait('["another_game_started"]', done);
+		});
+	});
+
+
+
+
+	describe('Basics', function () {
+		/*var started;
+		var createPublicRoom = function (done) {
+			var delta = (+new Date) - started;
+			if (delta >= 4000) throw new Error('Failed to get side player2 in 4000ms');
+			var client = new utils.Client(server, {id: 'Player2'});
+			client.connect(function () {
+				client.send('create_room', {type: 'public', name: 'ServerPlayer'});
+				client.wait('RECV(wait_opponent)', function () {
+					if (client.side == 'player2') {
+						player2 = client;
+						done();
+					} else {
+						client.kill('Got side ' + client.side + ' but wait for player2', true);
+						createPublicRoom(done);
+					}
+				});
+			});
+		};
+
+		it('should create client2', function (done) {
+			started = (+new Date);
+			createPublicRoom(done);
+		});
+
+		it('should wait for PhantomJS player join', function (done) {
+			player2.wait('RECV(opponent_joined)', done);
+		});
+
+		it('should wait for PhantomJS player turn', function (done) {
+			player2.wait('RECV(receive_turn)', done);
+		});*/
 
 		it('should wait for PhantomJS tests to finish', function (done) {
 			server.wait_error('clientTestFinished', done);
@@ -617,6 +699,13 @@ describe('Playing game', function () {
 	});
 
 	describe('Destroying server', function () {
+		for(var i=0;i<120;i++) {
+			it('should wait 1 sec', function (done) {
+				setTimeout(done, 1000);
+			});
+		}
+
+
 		it('should stop server', function(done) {
 			server.wait('WebSocket server closed', done);
 			server.destroy('Test is done');

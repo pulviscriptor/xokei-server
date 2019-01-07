@@ -15,7 +15,7 @@ function Turn(player, obj) {
 		var move2 = this.createMove(obj.history[1], obj.history);
 	}
 
-	// since client serts turn.scored we need to set it in last move to check in anticheat
+	// since client sets turn.scored we need to set it in last move to check in anticheat
 	if(this.scored) {
 		if(move2) {
 			move2.scored = this.scored;
